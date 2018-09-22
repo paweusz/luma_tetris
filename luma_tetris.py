@@ -7,10 +7,11 @@ from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
 
-class Block:
+class Block(object):
 
     def __init__(self, dev):
         self.xy = (0,0)
+        self.rotation = 0
         self.dev = dev
 
     def move(self, xy):
@@ -31,7 +32,7 @@ class Rect(Block):
                 self.transform(self.xy) + self.transform((self.xy[0] + 1, self.xy[1] + 1)),
                 outline="white", fill="white")    
 
-class El(Block): 
+class LBlock(Block): 
 
     def draw(self):
         with canvas(self.dev) as draw:
@@ -39,7 +40,7 @@ class El(Block):
                 self.transform(self.xy) + self.transform((self.xy[0], self.xy[1] + 2)) + self.transform((self.xy[0] + 1, self.xy[1] + 2)),
                 fill="white")    
 
-class Line(Block): 
+class IBlock(Block): 
 
     def draw(self):
         with canvas(self.dev) as draw:
@@ -47,7 +48,7 @@ class Line(Block):
                 self.transform(self.xy) + self.transform((self.xy[0], self.xy[1] + 3)),
                 fill="white")    
 
-class Zet(Block):
+class ZBlock(Block):
 
     def draw(self):
         with canvas(self.dev) as draw:
@@ -56,7 +57,7 @@ class Zet(Block):
                  + self.transform((self.xy[0] + 1, self.xy[1] + 1 )) + self.transform((self.xy[0] + 2, self.xy[1] + 1)),
                 fill="white")    
 
-class Es(Block):
+class SBlock(Block):
 
     def draw(self):
         with canvas(self.dev) as draw:
@@ -65,7 +66,7 @@ class Es(Block):
                  + self.transform((self.xy[0] + 1, self.xy[1])) + self.transform((self.xy[0] + 2, self.xy[1])),
                 fill="white")
 
-class Jot(Block):
+class JBlock(Block):
     
     def draw(self):
         with canvas(self.dev) as draw:
@@ -74,37 +75,22 @@ class Jot(Block):
                  + self.transform((self.xy[0], self.xy[1] + 2)),
                 fill="white")
 
-class Te(Block):
-    
+class TBlock(Block):
+
+    def __init__(self, dev):
+        super(TBlock, self).__init__(dev)
+        self._points = [[(1, 0), (0, 1), (1, 1), (2, 1)],
+            [(1, 0), (0, 1), (1, 1), (1, 2)],
+            [(0, 1), (1, 1), (2, 1), (1, 2)],
+            [(1, 0), (1, 1), (2, 1), (1, 2)]]
+
     def draw(self):
         with canvas(self.dev) as draw:
-            draw.line(
-                self.transform(self.xy) + self.transform((self.xy[0] + 2, self.xy[1])), fill="white")
-            draw.line(
-                self.transform((self.xy[0] + 1, self.xy[1])) + self.transform((self.xy[0] + 1, self.xy[1] + 2)), fill="white")
-
-def test_boundries(dev):
-    b = Block(dev)
-
-    b.move((0,0))
-    b.draw()
-    time.sleep(1)
-
-    b.move((7,0))
-    b.draw()
-    time.sleep(1)
-
-    b.move((0,15))
-    b.draw()
-    time.sleep(1)
-    
-    b.move((-7,0))
-    b.draw()
-    time.sleep(1)
-
-def test_shape(dev):
-    r = Te(dev)
-    r.draw()
+            for i in range(4):
+                draw.point(self.transform(
+                    (self.xy[0] + self._points[self.rotation][i][0],
+                     self.xy[1] + self._points[self.rotation][i][1])),
+                           fill="white")
 
 def getch():
     fd = sys.stdin.fileno()
@@ -118,17 +104,23 @@ def getch():
     return ch
 
 def main_loop(dev):
-    block = Te(dev)
+    block = TBlock(dev)
     block.draw()
 
     while True:
         ch = getch()
 
+        if (ch == ' '):
+            block.rotation = block.rotation - 1
+            if (block.rotation == -1):
+                block.rotation = 3
+            block.draw()
+
         if (ch == 's'):
             block.move((0,1))
             block.draw()
 
-        if (ch == '8'):
+        if (ch == 'w'):
             block.move((0,-1))
             block.draw()
 
