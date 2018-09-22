@@ -103,7 +103,10 @@ def getch():
     return ch
 
 def main_loop(dev):
-    block = JBlock(dev)
+    block_idx = 0
+    blocks = [OBlock(dev), LBlock(dev), IBlock(dev), ZBlock(dev), SBlock(dev), JBlock(dev), TBlock(dev)]
+    
+    block = blocks[block_idx]
     block.draw()
 
     while True:
@@ -113,6 +116,13 @@ def main_loop(dev):
             block.rotation = block.rotation - 1
             if (block.rotation == -1):
                 block.rotation = 3
+            block.draw()
+
+        if (ch == 'c'):
+            block_idx = block_idx + 1
+            if (block_idx == 7):
+                block_idx = 0
+            block = blocks[block_idx]
             block.draw()
 
         if (ch == 's'):
