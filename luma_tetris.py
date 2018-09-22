@@ -91,58 +91,53 @@ class TBlock(Block):
             [(0, 1), (1, 1), (2, 1), (1, 2)],
             [(1, 0), (1, 1), (2, 1), (1, 2)]]
 
-def getch():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
- 
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
+class Game:
 
-def main_loop(dev):
-    block_idx = 0
-    blocks = [OBlock(dev), LBlock(dev), IBlock(dev), ZBlock(dev), SBlock(dev), JBlock(dev), TBlock(dev)]
-    
-    block = blocks[block_idx]
-    block.draw()
+    def __init__(self, dev):
+        self.block_idx = 0
+        self.blocks = [OBlock(dev), LBlock(dev), IBlock(dev), ZBlock(dev), SBlock(dev), JBlock(dev), TBlock(dev)]
 
-    while True:
-        ch = getch()
+    def getch(self):
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
 
-        if (ch == ' '):
-            block.rotation = block.rotation - 1
-            if (block.rotation == -1):
-                block.rotation = 3
+    def main_loop(self):
+        while True:
+            block = self.blocks[self.block_idx]
             block.draw()
 
-        if (ch == 'c'):
-            block_idx = block_idx + 1
-            if (block_idx == 7):
-                block_idx = 0
-            block = blocks[block_idx]
-            block.draw()
+            ch = self.getch()
 
-        if (ch == 's'):
-            block.move((0,1))
-            block.draw()
+            if (ch == ' '):
+                block.rotation = block.rotation - 1
+                if (block.rotation == -1):
+                    block.rotation = 3
 
-        if (ch == 'w'):
-            block.move((0,-1))
-            block.draw()
+            if (ch == 'c'):
+                self.block_idx = self.block_idx + 1
+                if (self.block_idx == 7):
+                    self.block_idx = 0
 
-        if (ch == 'd'):
-            block.move((1,0))
-            block.draw()
+            if (ch == 's'):
+                block.move((0,1))
 
-        if (ch == 'a'):
-            block.move((-1,0))
-            block.draw()
+            if (ch == 'w'):
+                block.move((0,-1))
 
-        if (ch == 'q'):
-            break
+            if (ch == 'd'):
+                block.move((1,0))
+
+            if (ch == 'a'):
+                block.move((-1,0))
+
+            if (ch == 'q'):
+                break
 
 def create_device():
     serial = spi(port=0, device=0, gpio=noop())
@@ -155,9 +150,7 @@ def create_device():
 if __name__ == "__main__":
     dev = create_device()
 
-    #test_boundries(dev)
-    #test_shape(dev)
-
-    main_loop(dev)
+    game = Game(dev)
+    game.main_loop()
 
     dev.cleanup()
