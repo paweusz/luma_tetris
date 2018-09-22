@@ -22,58 +22,65 @@ class Block(object):
 
     def draw(self):
         with canvas(self.dev) as draw:
-            draw.point(self.transform(self.xy), fill="white")    
+            for i in range(4):
+                draw.point(self.transform(
+                    (self.xy[0] + self._points[self.rotation][i][1],
+                     self.xy[1] + self._points[self.rotation][i][0])),
+                           fill="white")
 
-class Rect(Block): 
+class OBlock(Block): 
 
-    def draw(self):
-        with canvas(self.dev) as draw:
-            draw.rectangle(
-                self.transform(self.xy) + self.transform((self.xy[0] + 1, self.xy[1] + 1)),
-                outline="white", fill="white")    
+    def __init__(self, dev):
+        super(OBlock, self).__init__(dev)
+        self._points = [[(0, 0), (0, 1), (1, 0), (1, 1)],
+            [(0, 0), (0, 1), (1, 0), (1, 1)],
+            [(0, 0), (0, 1), (1, 0), (1, 1)],
+            [(0, 0), (0, 1), (1, 0), (1, 1)]]
 
 class LBlock(Block): 
 
-    def draw(self):
-        with canvas(self.dev) as draw:
-            draw.line(
-                self.transform(self.xy) + self.transform((self.xy[0], self.xy[1] + 2)) + self.transform((self.xy[0] + 1, self.xy[1] + 2)),
-                fill="white")    
+    def __init__(self, dev):
+        super(LBlock, self).__init__(dev)
+        self._points = [[(0, 1), (1, 1), (2, 1), (2, 2)],
+            [(1, 0), (1, 1), (1, 2), (0, 2)],
+            [(0, 1), (1, 1), (2, 1), (0, 0)],
+            [(1, 0), (1, 1), (1, 2), (2, 0)]]
 
 class IBlock(Block): 
 
-    def draw(self):
-        with canvas(self.dev) as draw:
-            draw.line(
-                self.transform(self.xy) + self.transform((self.xy[0], self.xy[1] + 3)),
-                fill="white")    
+    def __init__(self, dev):
+        super(IBlock, self).__init__(dev)
+        self._points = [[(0, 1), (1, 1), (2, 1), (3, 1)],
+            [(1, 0), (1, 1), (1, 2), (1, 3)],
+            [(0, 1), (1, 1), (2, 1), (3, 1)],
+            [(1, 0), (1, 1), (1, 2), (1, 3)]]
 
 class ZBlock(Block):
 
-    def draw(self):
-        with canvas(self.dev) as draw:
-            draw.line(
-                self.transform(self.xy) + self.transform((self.xy[0] + 1, self.xy[1]))
-                 + self.transform((self.xy[0] + 1, self.xy[1] + 1 )) + self.transform((self.xy[0] + 2, self.xy[1] + 1)),
-                fill="white")    
-
+    def __init__(self, dev):
+        super(ZBlock, self).__init__(dev)
+        self._points = [[(0, 0), (1, 0), (1, 1), (2, 1)],
+            [(1, 0), (0, 1), (1, 1), (0, 2)],
+            [(0, 0), (1, 0), (1, 1), (2, 1)],
+            [(1, 0), (0, 1), (1, 1), (0, 2)]]
+        
 class SBlock(Block):
 
-    def draw(self):
-        with canvas(self.dev) as draw:
-            draw.line(
-                self.transform((self.xy[0], self.xy[1] + 1)) + self.transform((self.xy[0] + 1, self.xy[1] + 1))
-                 + self.transform((self.xy[0] + 1, self.xy[1])) + self.transform((self.xy[0] + 2, self.xy[1])),
-                fill="white")
+    def __init__(self, dev):
+        super(SBlock, self).__init__(dev)
+        self._points = [[(1, 0), (2, 0), (0, 1), (1, 1)],
+            [(0, 0), (0, 1), (1, 1), (1, 2)],
+            [(1, 0), (2, 0), (0, 1), (1, 1)],
+            [(0, 0), (0, 1), (1, 1), (1, 2)]]
 
 class JBlock(Block):
     
-    def draw(self):
-        with canvas(self.dev) as draw:
-            draw.line(
-                self.transform((self.xy[0] + 1, self.xy[1])) + self.transform((self.xy[0] + 1, self.xy[1] + 2))
-                 + self.transform((self.xy[0], self.xy[1] + 2)),
-                fill="white")
+    def __init__(self, dev):
+        super(JBlock, self).__init__(dev)
+        self._points = [[(0, 1), (1, 1), (2, 1), (2, 0)],
+            [(1, 0), (1, 1), (1, 2), (2, 2)],
+            [(0, 1), (1, 1), (2, 1), (0, 2)],
+            [(1, 0), (1, 1), (1, 2), (0, 0)]]
 
 class TBlock(Block):
 
@@ -83,14 +90,6 @@ class TBlock(Block):
             [(1, 0), (0, 1), (1, 1), (1, 2)],
             [(0, 1), (1, 1), (2, 1), (1, 2)],
             [(1, 0), (1, 1), (2, 1), (1, 2)]]
-
-    def draw(self):
-        with canvas(self.dev) as draw:
-            for i in range(4):
-                draw.point(self.transform(
-                    (self.xy[0] + self._points[self.rotation][i][0],
-                     self.xy[1] + self._points[self.rotation][i][1])),
-                           fill="white")
 
 def getch():
     fd = sys.stdin.fileno()
@@ -104,7 +103,7 @@ def getch():
     return ch
 
 def main_loop(dev):
-    block = TBlock(dev)
+    block = JBlock(dev)
     block.draw()
 
     while True:
