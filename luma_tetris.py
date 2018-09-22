@@ -6,6 +6,7 @@ import sys, termios, tty, os, time, datetime, random
 from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
+from threading import Timer
 
 class Block(object):
 
@@ -96,6 +97,16 @@ class Game:
     def __init__(self, dev):
         self.block_idx = 0
         self.blocks = [OBlock(dev), LBlock(dev), IBlock(dev), ZBlock(dev), SBlock(dev), JBlock(dev), TBlock(dev)]
+        self.timer = Timer(1, self._tick)
+        self._tick()
+
+    def _tick(self):
+        block = self.blocks[self.block_idx]
+        block.move((0,1))
+        block.draw()
+
+        self.timer = Timer(1, self._tick)
+        self.timer.start()
 
     def getch(self):
         fd = sys.stdin.fileno()
@@ -137,6 +148,7 @@ class Game:
                 block.move((-1,0))
 
             if (ch == 'q'):
+                self.timer.cancel()
                 break
 
 def create_device():
