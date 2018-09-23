@@ -126,8 +126,8 @@ class Scene:
 class Game:
 
     def __init__(self, dev):
-        self.block_idx = 0
         self.blocks = [OBlock, LBlock, IBlock, ZBlock, SBlock, JBlock, TBlock]
+        self.block_idx = random.randint(0,len(self.blocks)-1)
 
         self.scene = Scene(dev)
         self.block = self.blocks[self.block_idx]()
@@ -137,6 +137,7 @@ class Game:
 
     def _tick(self):
         if (not self.move_block((0,1))):
+            self.block_idx = random.randint(0,len(self.blocks)-1)
             self.block = self.blocks[self.block_idx]()
             self.scene.add_block(self.block)
 
