@@ -10,10 +10,9 @@ from threading import Timer
 
 class Block(object):
 
-    def __init__(self, dev):
+    def __init__(self):
         self.xy = (0,0)
         self.rotation = 0
-        self.dev = dev
 
     def move(self, xy):
         self.xy = (self.xy[0] + xy[0], self.xy[1] + xy[1])
@@ -21,24 +20,21 @@ class Block(object):
     def transform(self, xy):
         return (15 - xy[1], xy[0])
 
-    def can_move_down(self):
-        for i in range(4):
-            if (self._points[self.rotation][i][0] + self.xy[1] == 15):
-                return False
-        return True
+    def get_xy(self, point_idx):
+        return (self._points[self.rotation][point_idx][1] + self.xy[0],
+                self._points[self.rotation][point_idx][0] + self.xy[1])
 
-    def draw(self):
-        with canvas(self.dev) as draw:
-            for i in range(4):
-                draw.point(self.transform(
-                    (self.xy[0] + self._points[self.rotation][i][1],
-                     self.xy[1] + self._points[self.rotation][i][0])),
-                           fill="white")
+    def render(self, draw):
+        for i in range(4):
+            draw.point(self.transform(
+                (self.xy[0] + self._points[self.rotation][i][1],
+                 self.xy[1] + self._points[self.rotation][i][0])),
+                       fill="white")
 
 class OBlock(Block): 
 
-    def __init__(self, dev):
-        super(OBlock, self).__init__(dev)
+    def __init__(self):
+        super(OBlock, self).__init__()
         self._points = [[(0, 0), (0, 1), (1, 0), (1, 1)],
             [(0, 0), (0, 1), (1, 0), (1, 1)],
             [(0, 0), (0, 1), (1, 0), (1, 1)],
@@ -46,8 +42,8 @@ class OBlock(Block):
 
 class LBlock(Block): 
 
-    def __init__(self, dev):
-        super(LBlock, self).__init__(dev)
+    def __init__(self):
+        super(LBlock, self).__init__()
         self._points = [[(0, 1), (1, 1), (2, 1), (2, 2)],
             [(1, 0), (1, 1), (1, 2), (0, 2)],
             [(0, 1), (1, 1), (2, 1), (0, 0)],
@@ -55,8 +51,8 @@ class LBlock(Block):
 
 class IBlock(Block): 
 
-    def __init__(self, dev):
-        super(IBlock, self).__init__(dev)
+    def __init__(self):
+        super(IBlock, self).__init__()
         self._points = [[(0, 1), (1, 1), (2, 1), (3, 1)],
             [(1, 0), (1, 1), (1, 2), (1, 3)],
             [(0, 1), (1, 1), (2, 1), (3, 1)],
@@ -64,8 +60,8 @@ class IBlock(Block):
 
 class ZBlock(Block):
 
-    def __init__(self, dev):
-        super(ZBlock, self).__init__(dev)
+    def __init__(self):
+        super(ZBlock, self).__init__()
         self._points = [[(0, 0), (1, 0), (1, 1), (2, 1)],
             [(1, 0), (0, 1), (1, 1), (0, 2)],
             [(0, 0), (1, 0), (1, 1), (2, 1)],
@@ -73,8 +69,8 @@ class ZBlock(Block):
         
 class SBlock(Block):
 
-    def __init__(self, dev):
-        super(SBlock, self).__init__(dev)
+    def __init__(self):
+        super(SBlock, self).__init__()
         self._points = [[(1, 0), (2, 0), (0, 1), (1, 1)],
             [(0, 0), (0, 1), (1, 1), (1, 2)],
             [(1, 0), (2, 0), (0, 1), (1, 1)],
@@ -82,8 +78,8 @@ class SBlock(Block):
 
 class JBlock(Block):
     
-    def __init__(self, dev):
-        super(JBlock, self).__init__(dev)
+    def __init__(self):
+        super(JBlock, self).__init__()
         self._points = [[(0, 1), (1, 1), (2, 1), (2, 0)],
             [(1, 0), (1, 1), (1, 2), (2, 2)],
             [(0, 1), (1, 1), (2, 1), (0, 2)],
@@ -91,30 +87,102 @@ class JBlock(Block):
 
 class TBlock(Block):
 
-    def __init__(self, dev):
-        super(TBlock, self).__init__(dev)
+    def __init__(self):
+        super(TBlock, self).__init__()
         self._points = [[(1, 0), (0, 1), (1, 1), (2, 1)],
             [(1, 0), (0, 1), (1, 1), (1, 2)],
             [(0, 1), (1, 1), (2, 1), (1, 2)],
             [(1, 0), (1, 1), (2, 1), (1, 2)]]
 
+class Scene:
+
+    def __init__(self, dev):
+        self.blocks = []
+        self.dev = dev
+
+    def add_block(self, block):
+        self.blocks.append(block)
+
+    def render(self):
+        with canvas(self.dev) as draw:
+            for block in self.blocks:
+                block.render(draw)
+
+    def does_collide(self, block):
+        for my_i in range(4):
+            my_xy = block.get_xy(my_i)
+
+            if (my_xy[0] == 8 or my_xy[0] == -1 or my_xy[1] == 16 or my_xy[1] == -1):
+                return True
+            
+            for b in self.blocks:
+                if (b != block):
+                    for other_i in range(4):
+                        other_xy = b.get_xy(other_i)
+                        if (other_xy == my_xy):
+                            return True
+        return False
+
 class Game:
 
     def __init__(self, dev):
         self.block_idx = 0
-        self.blocks = [OBlock(dev), LBlock(dev), IBlock(dev), ZBlock(dev), SBlock(dev), JBlock(dev), TBlock(dev)]
+        self.blocks = [OBlock, LBlock, IBlock, ZBlock, SBlock, JBlock, TBlock]
+
+        self.scene = Scene(dev)
+        self.block = self.blocks[self.block_idx]()
+        self.scene.add_block(self.block)
+        
         self._tick()
 
     def _tick(self):
-        block = self.blocks[self.block_idx]
+        if (not self.move_block((0,1))):
+            self.block = self.blocks[self.block_idx]()
+            self.scene.add_block(self.block)
 
-        if (block.can_move_down()):
-            block.move((0,1))
-
-        block.draw()
+        self.scene.render()
 
         self.timer = Timer(1, self._tick)
         self.timer.start()
+
+    def move_block(self, xy):
+        self.block.move(xy)
+        if (self.scene.does_collide(self.block)):
+            self.block.move((-xy[0], -xy[1]))
+            return False
+        return True
+
+    def main_loop(self):
+        while True:
+            ch = self.getch()
+
+            if (ch == ' '):
+                self.block.rotation = self.block.rotation - 1
+                if (self.block.rotation == -1):
+                    self.block.rotation = 3
+
+            if (ch == 'c'):
+                self.block_idx = self.block_idx + 1
+                if (self.block_idx == 7):
+                    self.block_idx = 0
+
+            if (ch == 's'):
+                self.move_block((0,1))
+
+            if (ch == 'w'):
+                self.move_block((0,-1))
+
+            if (ch == 'd'):
+                self.move_block((1,0))
+
+            if (ch == 'a'):
+                self.move_block((-1,0))
+
+            if (ch == 'q'):
+                self.timer.cancel()
+                break
+
+            self.scene.render()
 
     def getch(self):
         fd = sys.stdin.fileno()
@@ -125,39 +193,6 @@ class Game:
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
-
-    def main_loop(self):
-        while True:
-            block = self.blocks[self.block_idx]
-            block.draw()
-
-            ch = self.getch()
-
-            if (ch == ' '):
-                block.rotation = block.rotation - 1
-                if (block.rotation == -1):
-                    block.rotation = 3
-
-            if (ch == 'c'):
-                self.block_idx = self.block_idx + 1
-                if (self.block_idx == 7):
-                    self.block_idx = 0
-
-            if (ch == 's'):
-                block.move((0,1))
-
-            if (ch == 'w'):
-                block.move((0,-1))
-
-            if (ch == 'd'):
-                block.move((1,0))
-
-            if (ch == 'a'):
-                block.move((-1,0))
-
-            if (ch == 'q'):
-                self.timer.cancel()
-                break
 
 def create_device():
     serial = spi(port=0, device=0, gpio=noop())
