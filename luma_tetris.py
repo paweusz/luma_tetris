@@ -21,6 +21,12 @@ class Block(object):
     def transform(self, xy):
         return (15 - xy[1], xy[0])
 
+    def can_move_down(self):
+        for i in range(4):
+            if (self._points[self.rotation][i][0] + self.xy[1] == 15):
+                return False
+        return True
+
     def draw(self):
         with canvas(self.dev) as draw:
             for i in range(4):
@@ -97,12 +103,14 @@ class Game:
     def __init__(self, dev):
         self.block_idx = 0
         self.blocks = [OBlock(dev), LBlock(dev), IBlock(dev), ZBlock(dev), SBlock(dev), JBlock(dev), TBlock(dev)]
-        self.timer = Timer(1, self._tick)
         self._tick()
 
     def _tick(self):
         block = self.blocks[self.block_idx]
-        block.move((0,1))
+
+        if (block.can_move_down()):
+            block.move((0,1))
+
         block.draw()
 
         self.timer = Timer(1, self._tick)
