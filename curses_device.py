@@ -17,14 +17,15 @@ class CursesDevice(object):
 		self.stdscr.clear()
 
 	def point(self, xy):
-		self.stdscr.addstr(16 - xy[0], xy[1] + 1, 'X')
+		self.stdscr.addch(16 - xy[0], xy[1] + 1, curses.ACS_CKBOARD)
 
 	def render(self):
-		for x in range(0,8):
+		for x in range(8):
 			self.stdscr.addstr(0, x + 1, str(x))
-		for y in range(0,16):
+			self.stdscr.addstr(17, x + 1, str(x))
+		for y in range(16):
 			self.stdscr.addstr(y + 1, 0, str(y % 10))
-		self.stdscr.refresh()
-	
+			self.stdscr.addstr(y + 1, 9, str(y % 10))
 
+		self.stdscr.refresh()
 
