@@ -11,6 +11,7 @@ class CursesDevice(object):
 
 	def _do_run(self, abc):
 		self.stdscr = curses.initscr()
+		curses.curs_set(0)
 		self.method()
 
 	def clean(self):
