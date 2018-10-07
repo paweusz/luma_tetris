@@ -1,30 +1,39 @@
 class Scene:
 
-    def __init__(self, dev):
-        self.blocks = []
+    def __init__(self, dev, size):
+        self.block = None
         self.dev = dev
+        self.size = size
+        self.bg = [[0 for i in range(size[1])] for i in range(size[0])]
 
-    def add_block(self, block):
-        self.blocks.append(block)
+    def set_current_block(self, block):
+        self.block = block
 
     def render(self):
         self.dev.clean()
-        for block in self.blocks:
-            block.render(self.dev)
-        self.dev.render()
 
-    def does_collide(self, block):
+        self.block.render(self.dev)
+        for x in range(len(self.bg)):
+        	for y in range(len(self.bg[x])):
+        		if self.bg[x][y]:
+        			self.dev.point((15 - y, x))
+
+        self.dev.render()
+        
+    def hydrate_block(self, block):
+        for my_i in range(4):
+            my_xy = block.get_xy(my_i)
+            self.bg[my_xy[0]][my_xy[1]] = 1
+
+    def collides(self, block):
         for my_i in range(4):
             my_xy = block.get_xy(my_i)
 
-            if (my_xy[0] == 8 or my_xy[0] == -1 or my_xy[1] == 16 or my_xy[1] == -1):
+            if (my_xy[0] == self.size[0] or my_xy[0] == -1 or my_xy[1] == self.size[1] or my_xy[1] == -1):
                 return True
             
-            for b in self.blocks:
-                if (b != block):
-                    for other_i in range(4):
-                        other_xy = b.get_xy(other_i)
-                        if (other_xy == my_xy):
-                            return True
+            if (self.bg[my_xy[0]][my_xy[1]]) == 1:
+            	return True
+            
         return False
 

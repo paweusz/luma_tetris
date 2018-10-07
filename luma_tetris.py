@@ -13,17 +13,16 @@ class Game:
 
     def __init__(self, dev):
         self.blocks = [OBlock, LBlock, IBlock, ZBlock, SBlock, JBlock, TBlock]
-        self.block_idx = random.randint(0,len(self.blocks)-1)
 
-        self.scene = Scene(dev)
-        self.block = self.blocks[self.block_idx]()
-        self.scene.add_block(self.block)
+        self.scene = Scene(dev, (8,16))
+        self.block = self.random_block()
+        self.scene.set_current_block(self.block)
         
     def tick(self):
         if (not self.move_block((0,1))):
-            self.block_idx = random.randint(0,len(self.blocks)-1)
-            self.block = self.blocks[self.block_idx]()
-            self.scene.add_block(self.block)
+            self.scene.hydrate_block(self.block)
+            self.block = self.random_block()
+            self.scene.set_current_block(self.block)
 
         self.scene.render()
 
@@ -32,10 +31,14 @@ class Game:
 
     def move_block(self, xy):
         self.block.move(xy)
-        if (self.scene.does_collide(self.block)):
+        if (self.scene.collides(self.block)):
             self.block.move((-xy[0], -xy[1]))
             return False
         return True
+
+    def random_block(self):
+        block_idx = random.randint(0,len(self.blocks)-1)
+        return self.blocks[block_idx]()
 
     def main_loop(self):
     	self.tick()
@@ -47,11 +50,6 @@ class Game:
                 self.block.rotation = self.block.rotation - 1
                 if (self.block.rotation == -1):
                     self.block.rotation = 3
-
-            if (ch == 'c'):
-                self.block_idx = self.block_idx + 1
-                if (self.block_idx == 7):
-                    self.block_idx = 0
 
             if (ch == 's'):
                 self.move_block((0,1))
