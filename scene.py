@@ -16,7 +16,7 @@ class Scene:
         for x in range(len(self.bg)):
         	for y in range(len(self.bg[x])):
         		if self.bg[x][y]:
-        			self.dev.point((15 - y, x))
+        			self.dev.point((x, y))
 
         self.dev.render()
         

@@ -7,18 +7,15 @@ class Block(object):
     def move(self, xy):
         self.xy = (self.xy[0] + xy[0], self.xy[1] + xy[1])
 
-    def transform(self, xy):
-        return (15 - xy[1], xy[0])
-
     def get_xy(self, point_idx):
         return (self._points[self.rotation][point_idx][1] + self.xy[0],
                 self._points[self.rotation][point_idx][0] + self.xy[1])
 
     def render(self, device):
         for i in range(4):
-            device.point(self.transform(
+            device.point(
                 (self.xy[0] + self._points[self.rotation][i][1],
-                 self.xy[1] + self._points[self.rotation][i][0])))
+                 self.xy[1] + self._points[self.rotation][i][0]))
 
 class OBlock(Block): 
 

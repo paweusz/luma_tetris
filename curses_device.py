@@ -18,7 +18,7 @@ class CursesDevice(object):
 		self.stdscr.clear()
 
 	def point(self, xy):
-		self.stdscr.addch(16 - xy[0], xy[1] + 1, curses.ACS_CKBOARD)
+		self.stdscr.addch(xy[1] + 1, xy[0] + 1, curses.ACS_CKBOARD)
 
 	def render(self):
 		for x in range(8):
