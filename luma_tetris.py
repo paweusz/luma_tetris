@@ -21,6 +21,7 @@ class Game:
     def tick(self):
         if (not self.move_block((0,1))):
             self.scene.hydrate_block(self.block)
+            self.scene.process_lines()
             self.block = self.random_block()
             self.scene.set_current_block(self.block)
 
